@@ -221,3 +221,4 @@ export function CreateExamDialog({ open, onOpenChange }: CreateExamDialogProps) 
       </DialogContent>
     </Dialog>
   );
+}
