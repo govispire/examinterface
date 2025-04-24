@@ -16,8 +16,29 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add authentication logic here
-    console.log('Login attempt:', { email, password });
+    try {
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      // Get user role from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user?.id)
+        .single();
+
+      if (profile?.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/student');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   return (

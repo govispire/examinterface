@@ -23,8 +23,37 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add signup logic here
-    console.log('Signup attempt:', formData);
+    try {
+      // Create auth user
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signUpError) throw signUpError;
+
+      // Create profile with role
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: user?.id,
+            name: formData.name,
+            role: formData.role
+          }
+        ]);
+
+      if (profileError) throw profileError;
+
+      // Redirect based on role
+      if (formData.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/student');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+    }
   };
 
   return (
