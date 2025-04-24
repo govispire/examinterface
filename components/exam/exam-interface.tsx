@@ -14,6 +14,37 @@ import { cn } from '@/lib/utils';
 
 export default function ExamInterface() {
   const [isNavOpen, setIsNavOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const { supabase } = useSupabase();
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setIsLoading(true);
+        const sections = ['Quantitative Aptitude', 'Reasoning', 'English Language', 'General Awareness', 'Computer Knowledge'];
+        
+        for (const section of sections) {
+          const questions = await loadQuestionsFromDB(supabase, section);
+          // Update exam store with questions
+          useExamStore.setState((state) => ({
+            sections: state.sections.map((s) => 
+              s.name === section ? { ...s, questions } : s
+            )
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading questions:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuestions();
+  }, [supabase]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading questions...</div>;
+  }
   const { 
     currentSection, 
     currentSectionIndex, 

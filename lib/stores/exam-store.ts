@@ -50,7 +50,32 @@ interface ExamStore {
   currentQuestion?: Question;
 }
 
-const generateQuantitativeQuestions = (): Question[] => {
+const loadQuestionsFromDB = async (supabase: any, category: string): Promise<Question[]> => {
+  const { data, error } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('category', category);
+
+  if (error) {
+    console.error('Error loading questions:', error);
+    return [];
+  }
+
+  return data.map((q: any) => ({
+    id: q.id,
+    text: q.text,
+    options: q.options,
+    selectedAnswer: undefined,
+    correctAnswer: q.correct_answer,
+    explanation: q.explanation,
+    markedForReview: false,
+    visited: false,
+    type: q.type as 'mcq' | 'data-interpretation'
+  }));
+};
+
+const generateQuantitativeQuestions = async (supabase: any): Promise<Question[]> => {
+  return await loadQuestionsFromDB(supabase, 'Quantitative Aptitude');
   const questions: Question[] = [
     {
       id: 1,
