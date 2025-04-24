@@ -27,9 +27,26 @@ export default function CreateTest() {
     }
   });
 
+  const SECTIONS = [
+    'Quantitative Aptitude',
+    'Reasoning',
+    'English Language',
+    'General Awareness',
+    'Computer Knowledge'
+  ];
+
   const onSubmit = async (data: any) => {
     try {
       setUploading(true);
+      
+      // Create the test structure with sections
+      const formattedTest = {
+        ...data,
+        sections: SECTIONS.map(section => ({
+          name: section,
+          questions: []
+        }))
+      };
       
       // Create test
       const { data: test, error: testError } = await supabase

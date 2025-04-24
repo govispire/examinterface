@@ -28,7 +28,7 @@ export default function TestsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Test Management</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={() => window.location.href = '/admin/tests/create'}>
           <Plus className="w-4 h-4 mr-2" />
           Create New Test
         </Button>
