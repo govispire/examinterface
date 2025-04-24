@@ -69,7 +69,7 @@ export default function TestsPage() {
               <TableCell>
                 <Badge variant="secondary">Draft</Badge>
               </TableCell>
-              <TableCell>{new Date().toLocaleDateString()}</TableCell>
+              <TableCell>{new Date().toISOString().split('T')[0]}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
