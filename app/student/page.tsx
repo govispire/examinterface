@@ -4,13 +4,18 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import ExamInterface from '@/components/exam/exam-interface';
 
 export default function StudentDashboard() {
+  const [showExam, setShowExam] = useState(false);
   const [tests] = useState([
     { id: 1, title: 'Mock Test 1', duration: '180 mins', questions: 100 },
     { id: 2, title: 'Practice Test', duration: '120 mins', questions: 75 }
   ]);
+
+  if (showExam) {
+    return <ExamInterface />;
+  }
 
   return (
     <div className="p-8">
@@ -25,9 +30,12 @@ export default function StudentDashboard() {
               <div className="space-y-2">
                 <p>Duration: {test.duration}</p>
                 <p>Questions: {test.questions}</p>
-                <Link href={`/exam/${test.id}`}>
-                  <Button className="w-full mt-4">Start Test</Button>
-                </Link>
+                <Button 
+                  className="w-full mt-4" 
+                  onClick={() => setShowExam(true)}
+                >
+                  Start Test
+                </Button>
               </div>
             </CardContent>
           </Card>
