@@ -7,24 +7,78 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import { useSupabase } from '@/lib/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export default function CreateTest() {
   const router = useRouter();
+  const { supabase } = useSupabase();
+  const [uploading, setUploading] = useState(false);
+  
   const form = useForm({
     defaultValues: {
       title: '',
       duration: 180,
       totalQuestions: 100,
-      instructions: ''
+      instructions: '',
+      questionFile: null
     }
   });
 
   const onSubmit = async (data: any) => {
-    // TODO: Implement test creation logic
-    console.log('Test data:', data);
-    router.push('/admin/tests');
+    try {
+      setUploading(true);
+      
+      // Create test
+      const { data: test, error: testError } = await supabase
+        .from('tests')
+        .insert({
+          title: data.title,
+          duration: data.duration,
+          total_questions: data.totalQuestions,
+          instructions: data.instructions,
+          status: 'draft'
+        })
+        .select()
+        .single();
+
+      if (testError) throw testError;
+
+      if (data.questionFile) {
+        const fileReader = new FileReader();
+        fileReader.onload = async (e) => {
+          const questions = JSON.parse(e.target?.result as string);
+          
+          // Insert questions
+          const { error: questionsError } = await supabase
+            .from('questions')
+            .insert(questions.map((q: any) => ({
+              ...q,
+              test_id: test.id
+            })));
+
+          if (questionsError) throw questionsError;
+        };
+        fileReader.readAsText(data.questionFile);
+      }
+
+      toast({
+        title: "Success",
+        description: "Test created successfully"
+      });
+      router.push('/admin/tests');
+    } catch (error) {
+      console.error('Error creating test:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create test",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -85,11 +139,34 @@ export default function CreateTest() {
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="questionFile"
+              render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Upload Questions (JSON)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="file" 
+                      accept=".json"
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Upload a JSON file containing the questions
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
             <div className="flex justify-end gap-4">
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
-              <Button type="submit">Create Test</Button>
+              <Button type="submit" disabled={uploading}>
+                {uploading ? 'Creating...' : 'Create Test'}
+              </Button>
             </div>
           </form>
         </Form>
