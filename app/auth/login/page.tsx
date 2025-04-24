@@ -27,17 +27,23 @@ export default function LoginPage() {
       // Get user role from profiles table
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, name')
         .eq('id', user?.id)
         .single();
 
       if (profile?.role === 'admin') {
-        router.push('/admin');
+        router.push('/admin'); // Admin dashboard with test creation interface
       } else {
-        router.push('/student');
+        router.push('/student'); // Student dashboard with available tests
       }
     } catch (error) {
       console.error('Login error:', error);
+      // Show error toast
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again",
+        variant: "destructive"
+      });
     }
   };
 
