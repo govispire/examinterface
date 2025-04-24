@@ -13,6 +13,32 @@ interface Exam {
   sections?: any[];
 }
 
+export function useCreateExam() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { supabase } = useSupabase();
+
+  const createExam = async (examData: any) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('exams')
+        .insert([{ ...examData, status: 'draft' }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating exam:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { createExam, isLoading };
+}
+
 export function useExams() {
   const [isLoading, setIsLoading] = useState(false);
   const { supabase } = useSupabase();
